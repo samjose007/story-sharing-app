@@ -41,6 +41,10 @@ module.exports = {
           from: path.resolve(__dirname, 'src/screenshots'),
           to: path.resolve(__dirname, 'dist/screenshots'),
         },
+        {
+          from: path.resolve(__dirname, 'src/sw.js'),
+          to: path.resolve(__dirname, 'dist/sw.js'),
+        },
       ],
     }),
   ],
