@@ -1,7 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-
+ 
 module.exports = {
   entry: {
     app: path.resolve(__dirname, 'src/scripts/index.js'),
@@ -40,10 +40,6 @@ module.exports = {
         {
           from: path.resolve(__dirname, 'src/screenshots'),
           to: path.resolve(__dirname, 'dist/screenshots'),
-        },
-        {
-          from: path.resolve(__dirname, 'src/sw.js'),
-          to: path.resolve(__dirname, 'dist/sw.js'),
         },
       ],
     }),

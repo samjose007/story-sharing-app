@@ -1,51 +1,79 @@
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CACHE_NAME = 'story-app-static-v1';
 
-module.exports = {
-  entry: {
-    app: path.resolve(__dirname, 'src/scripts/index.js'),
-  },
-  output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-    clean: true,
-  },
-  module: {
-    rules: [
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll([
+        '/',
+        '/index.html',
+        '/styles/styles.css',
+        '/app.bundle.js',
+        '/manifest.json',
+        '/icons/icon-72x72.png',
+        '/icons/icon-144x144.png',
+        '/icons/icon-192x192.png'
+      ]);
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  
+  const data = event.data.json();
+  const options = {
+    body: data.body || 'New story has been shared',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-72x72.png',
+    image: data.image,
+    data: {
+      url: data.url || '/'
+    },
+    actions: [
       {
-        test: /\.(png|jpe?g|gif)$/i,
-        type: 'asset/resource',
+        action: 'open',
+        title: 'View Story'
       },
-    ],
-  },
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src/index.html'),
-    }),
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: path.resolve(__dirname, 'src/public'),
-          to: path.resolve(__dirname, 'dist'),
-        },
-        {
-          from: path.resolve(__dirname, 'src/styles'),
-          to: path.resolve(__dirname, 'dist/styles'),
-        },
-        {
-          from: path.resolve(__dirname, 'src/icons'),
-          to: path.resolve(__dirname, 'dist/icons'),
-        },
-        {
-          from: path.resolve(__dirname, 'src/screenshots'),
-          to: path.resolve(__dirname, 'dist/screenshots'),
-        },
-        {
-          from: path.resolve(__dirname, 'src/public/sw.js'),
-          to: path.resolve(__dirname, 'dist/sw.js'),
-        },
-      ],
-    }),
-  ],
-};
+      {
+        action: 'close',
+        title: 'Close'
+      }
+    ]
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'New Story', options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  if (event.action === 'open') {
+    event.waitUntil(
+      clients.matchAll({type: 'window'}).then((clientList) => {
+        for (const client of clientList) {
+          if (client.url === event.notification.data.url && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        if (clients.openWindow) {
+          return clients.openWindow(event.notification.data.url);
+        }
+      })
+    );
+  }
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
