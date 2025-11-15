@@ -9,7 +9,6 @@ self.addEventListener('install', (event) => {
         '/styles/styles.css',
         '/app.bundle.js',
         '/manifest.json',
-        '/icons/icon-72x72.png',
         '/icons/icon-144x144.png',
         '/icons/icon-192x192.png'
       ]);
@@ -17,11 +16,11 @@ self.addEventListener('install', (event) => {
   );
   self.skipWaiting();
 });
-
+ 
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
-
+ 
 self.addEventListener('push', (event) => {
   if (!event.data) return;
   
@@ -50,7 +49,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title || 'New Story', options)
   );
 });
-
+ 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
@@ -69,7 +68,7 @@ self.addEventListener('notificationclick', (event) => {
     );
   }
 });
-
+ 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
